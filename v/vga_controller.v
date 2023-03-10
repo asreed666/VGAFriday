@@ -24,8 +24,18 @@ wire [10:0] xPos;
 wire [9:0] yPos;
 reg [10:0] ballX = 0;
 reg [9:0] ballY = 0;
-integer ballXspeed =4;
-integer ballYspeed =4;
+integer ballXspeed = 4;
+integer ballYspeed = 4;
+integer ballSpeed = 4;
+reg [9:0] plyr1PaddleY = 100;
+reg [9:0] plyr1PaddleX = 10;
+reg [9:0] plyr2PaddleY = 100;
+reg [9:0] plyr2PaddleX = VIDEO_W - 20;
+integer paddleWidth = 10;
+integer paddleHeight = 40;
+//`define INCLUSIVE
+
+
 ////
 assign rst = ~iRST_n;
 
@@ -66,13 +76,32 @@ begin
 		// The ball
 		if ((xPos >= ballX) && (xPos < ballX + 5) && (yPos >= ballY) && (yPos < ballY + 5))
 			bgr_data <= 24'hffffff;
+		else if ((xPos >= plyr1PaddleX) && (xPos < plyr1PaddleX + paddleWidth) &&
+				(yPos >= plyr1PaddleY) && (yPos < plyr1PaddleY + paddleHeight))
+`ifdef INCLUSIVE
+			if (yPos%paddleHeight < paddleHeight/5)
+				bgr_data<= 24'h0000ff;
+			else if (yPos%paddleHeight < 2*paddleHeight/5)
+				bgr_data<= 24'h00ff00;
+			else if (yPos%paddleHeight < 3*paddleHeight/5)
+				bgr_data<= 24'h00ffff;
+			else if (yPos%paddleHeight < 4*paddleHeight/5)
+				bgr_data<= 24'hff0000;
+			else
+				bgr_data<= 24'hff00ff;
+`else
+			bgr_data<= 24'hff00ff;
+`endif
+		else if ((xPos >= plyr2PaddleX) && (xPos < plyr2PaddleX + paddleWidth) &&
+				(yPos >= plyr2PaddleY) && (yPos < plyr2PaddleY + paddleHeight))
+			bgr_data<=24'hffff00;
 		// green Top line
 		else if ((yPos >= 90) && (yPos < 95)) bgr_data <= {8'h00,8'hff, 8'h00};  
 		// green bottom line
       else if ((yPos >= VIDEO_H - 15) && (yPos < VIDEO_H  - 10)) bgr_data <= {8'h00,8'hff, 8'h00};
 		// the net
 		else if ((yPos > 92) && (yPos < VIDEO_H - 15) && // vertical position
-					(xPos > VIDEO_W/2 -2)  && (xPos < VIDEO_W/2 + 2) && // horizontal position
+					(xPos > VIDEO_W/2 - 2)  && (xPos < VIDEO_W/2 + 2) && // horizontal position
 					(yPos % 22 < 11)) // dashed line
 			bgr_data <= {8'hcc,8'hcc, 8'hcc};
 		// default to black
@@ -84,14 +113,35 @@ end
 
 always @(posedge cVS)
 begin
-	ballX <= ballX + ballXspeed;
-	ballY <= ballY + ballYspeed;
-	
-	if (ballX > VIDEO_W - 11'd10) ballXspeed = -4;
-	else if (ballX < 11'd10) ballXspeed = 4;
 
-	if (ballY > VIDEO_H - 10'd25) ballYspeed = -4;
-	else if (ballY < 10'd100) ballYspeed = 4;
+	
+	// horizontal bounce
+	if (ballX > VIDEO_W - 11'd10) ballXspeed = - ballSpeed;
+	else if (ballX < 11'd10) ballXspeed = ballSpeed;
+
+	// vertical bounce
+	if (ballY > VIDEO_H - 10'd25) ballYspeed = - ballSpeed;
+	else if (ballY < 10'd100) ballYspeed = ballSpeed;
+	
+	// bouncing off player 1 paddle
+	else if ((ballX > plyr1PaddleX) && (ballX < plyr1PaddleX + paddleWidth) && 
+		(ballY > plyr1PaddleY) && (ballY < plyr1PaddleY + paddleHeight))
+		begin
+			ballXspeed = ballSpeed;
+			ballX <= ballX + paddleWidth;
+		end
+	// bouncing off player 2 paddle
+	else if ((ballX > plyr2PaddleX) && (ballX < plyr2PaddleX + paddleWidth) && 
+		(ballY > plyr2PaddleY) && (ballY < plyr2PaddleY + paddleHeight))
+		begin
+			ballXspeed = - ballSpeed;
+			ballX <= ballX - ballXspeed - paddleWidth;
+		end
+	else
+		ballX <= ballX + ballXspeed;
+		ballY <= ballY + ballYspeed;
+		plyr1PaddleY <= ballY - paddleHeight/2;
+		plyr2PaddleY <= ballY - paddleHeight/2;
 	
 end
 
