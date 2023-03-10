@@ -61,18 +61,23 @@ begin
      bgr_data<=24'h000000;
   end
     else
-    begin
+    begin  
+	   // This block draws stuff on the display
+		// The ball
 		if ((xPos >= ballX) && (xPos < ballX + 5) && (yPos >= ballY) && (yPos < ballY + 5))
 			bgr_data <= 24'hffffff;
-		 else if ((yPos >= 90) && (yPos < 95)) bgr_data <= {8'h00,8'hff, 8'h00};  // green
-		 else if ((yPos >= VIDEO_H - 15) && (yPos < VIDEO_H  - 10)) bgr_data <= {8'h00,8'hff, 8'h00};  // green
-			/*if (0<ADDR && ADDR <= VIDEO_W/3)
-					bgr_data <= {8'hff, 8'h00, 8'h00}; // blue
-				else if (ADDR > VIDEO_W/3 && ADDR <= VIDEO_W*2/3)
-					bgr_data <= {8'h00,8'hff, 8'h00};  // green
-				else if(ADDR > VIDEO_W*2/3 && ADDR <=VIDEO_W)
-					bgr_data <= {8'h00, 8'h00, 8'hff}; // red */
-				else bgr_data <= 24'h0000;
+		// green Top line
+		else if ((yPos >= 90) && (yPos < 95)) bgr_data <= {8'h00,8'hff, 8'h00};  
+		// green bottom line
+      else if ((yPos >= VIDEO_H - 15) && (yPos < VIDEO_H  - 10)) bgr_data <= {8'h00,8'hff, 8'h00};
+		// the net
+		else if ((yPos > 92) && (yPos < VIDEO_H - 15) && // vertical position
+					(xPos > VIDEO_W/2 -2)  && (xPos < VIDEO_W/2 + 2) && // horizontal position
+					(yPos % 22 < 11)) // dashed line
+			bgr_data <= {8'hcc,8'hcc, 8'hcc};
+		// default to black
+		else bgr_data <= 24'h0000; 
+		
  
     end
 end
@@ -85,7 +90,7 @@ begin
 	if (ballX > VIDEO_W - 11'd10) ballXspeed = -4;
 	else if (ballX < 11'd10) ballXspeed = 4;
 
-	if (ballY > VIDEO_H - 10'd20) ballYspeed = -4;
+	if (ballY > VIDEO_H - 10'd25) ballYspeed = -4;
 	else if (ballY < 10'd100) ballYspeed = 4;
 	
 end
