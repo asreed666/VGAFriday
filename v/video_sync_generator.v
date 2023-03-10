@@ -91,12 +91,12 @@ always @(posedge vga_clk)
 begin // create pixel position counter xPos, yPos
 	if ((h_cnt >= hori_back) && (h_cnt < hori_line - hori_front))
 		xPos <= h_cnt - hori_back;
-	else 
+	else
 		xPos <= 0;
 	if ((v_cnt >= vert_back) && (v_cnt < vert_line - vert_front))
 		yPos <= v_cnt - vert_back;
 	else
-		yPos <= 0;
+		yPos <= 0;		
 end
 /////
 assign cHD = (h_cnt<H_sync_cycle)?1'b0:1'b1;

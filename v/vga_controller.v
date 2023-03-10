@@ -23,8 +23,9 @@ wire cBLANK_n,cHS,cVS,rst;
 wire [10:0] xPos;
 wire [9:0] yPos;
 reg [10:0] ballX = 0;
-reg [9:0] ballY = 50;
-
+reg [9:0] ballY = 0;
+integer ballXspeed =4;
+integer ballYspeed =4;
 ////
 assign rst = ~iRST_n;
 
@@ -61,23 +62,31 @@ begin
   end
     else
     begin
-		if ((xPos >= ballX) && (xPos < ballX + 5) && (yPos >= 50) && (yPos < 55))
+		if ((xPos >= ballX) && (xPos < ballX + 5) && (yPos >= ballY) && (yPos < ballY + 5))
 			bgr_data <= 24'hffffff;
-			else if (0<ADDR && ADDR <= VIDEO_W/3)
+		 else if ((yPos >= 90) && (yPos < 95)) bgr_data <= {8'h00,8'hff, 8'h00};  // green
+		 else if ((yPos >= VIDEO_H - 15) && (yPos < VIDEO_H  - 10)) bgr_data <= {8'h00,8'hff, 8'h00};  // green
+			/*if (0<ADDR && ADDR <= VIDEO_W/3)
 					bgr_data <= {8'hff, 8'h00, 8'h00}; // blue
 				else if (ADDR > VIDEO_W/3 && ADDR <= VIDEO_W*2/3)
 					bgr_data <= {8'h00,8'hff, 8'h00};  // green
 				else if(ADDR > VIDEO_W*2/3 && ADDR <=VIDEO_W)
-					bgr_data <= {8'h00, 8'h00, 8'hff}; // red
-				else bgr_data <= 24'h0000; 
+					bgr_data <= {8'h00, 8'h00, 8'hff}; // red */
+				else bgr_data <= 24'h0000;
  
     end
 end
 
 always @(posedge cVS)
 begin
-	ballX <= ballX + 11'd1;
-	if (ballX > VIDEO_W) ballX <= 11'd0;
+	ballX <= ballX + ballXspeed;
+	ballY <= ballY + ballYspeed;
+	
+	if (ballX > VIDEO_W - 11'd10) ballXspeed = -4;
+	else if (ballX < 11'd10) ballXspeed = 4;
+
+	if (ballY > VIDEO_H - 10'd20) ballYspeed = -4;
+	else if (ballY < 10'd100) ballYspeed = 4;
 	
 end
 
