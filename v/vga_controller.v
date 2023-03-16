@@ -28,9 +28,9 @@ integer ballXspeed = 4;
 integer ballYspeed = 4;
 integer ballSpeed = 4;
 reg [9:0] plyr1PaddleY = 100;
-reg [9:0] plyr1PaddleX = 10;
+reg [10:0] plyr1PaddleX = 10;
 reg [9:0] plyr2PaddleY = 100;
-reg [9:0] plyr2PaddleX = VIDEO_W - 20;
+reg [10:0] plyr2PaddleX = VIDEO_W - 20;
 integer paddleWidth = 10;
 integer paddleHeight = 40;
 //`define INCLUSIVE
