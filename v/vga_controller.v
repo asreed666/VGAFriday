@@ -33,6 +33,9 @@ reg [9:0] plyr2PaddleY = 100;
 reg [10:0] plyr2PaddleX = VIDEO_W - 20;
 integer paddleWidth = 10;
 integer paddleHeight = 40;
+reg [11:0] charAddr;
+reg [7:0] charData;
+wire char_nWr;
 //`define INCLUSIVE
 
 
@@ -47,6 +50,17 @@ video_sync_generator LTM_ins (.vga_clk(iVGA_CLK),
 										.xPos(xPos),
 										.yPos(yPos)
 										);
+txtScreen txtScreen(
+      .hp(xPos),
+		.vp(yPos),
+		.addr(charAddr),
+		.data(charData),
+		.nWr (char_nWr),
+      .pClk(iVGA_CLK),
+		.nblnk(cBLANK_n),
+		.pix(textRGB)
+      );
+
 
 ////Addresss generator
 always@(posedge iVGA_CLK,negedge iRST_n)
@@ -73,22 +87,19 @@ begin
     else
     begin  
 	   // This block draws stuff on the display
-		// The ball
-		if ((xPos >= ballX) && (xPos < ballX + 5) && (yPos >= ballY) && (yPos < ballY + 5))
-			bgr_data <= 24'hffffff;
-		else if ((xPos >= plyr1PaddleX) && (xPos < plyr1PaddleX + paddleWidth) &&
+		if ((xPos >= plyr1PaddleX) && (xPos < plyr1PaddleX + paddleWidth) &&
 				(yPos >= plyr1PaddleY) && (yPos < plyr1PaddleY + paddleHeight))
 `ifdef INCLUSIVE
 			if (yPos%paddleHeight < paddleHeight/5)
-				bgr_data<= 24'h0000ff;
+				bgr_data<= 24'h0000ff; // Red
 			else if (yPos%paddleHeight < 2*paddleHeight/5)
-				bgr_data<= 24'h00ff00;
+				bgr_data<= 24'h00ff00; // Green
 			else if (yPos%paddleHeight < 3*paddleHeight/5)
-				bgr_data<= 24'h00ffff;
+				bgr_data<= 24'h00ffff; // Cyan
 			else if (yPos%paddleHeight < 4*paddleHeight/5)
-				bgr_data<= 24'hff0000;
+				bgr_data<= 24'hff0000; // Blue
 			else
-				bgr_data<= 24'hff00ff;
+				bgr_data<= 24'hff00ff; // Magenta
 `else
 			bgr_data<= 24'hff00ff;
 `endif
@@ -104,6 +115,10 @@ begin
 					(xPos > VIDEO_W/2 - 2)  && (xPos < VIDEO_W/2 + 2) && // horizontal position
 					(yPos % 22 < 11)) // dashed line
 			bgr_data <= {8'hcc,8'hcc, 8'hcc};
+		// The ball
+		else if ((xPos >= ballX) && (xPos < ballX + 5) && (yPos >= ballY) && (yPos < ballY + 5))
+			bgr_data <= 24'hffffff;
+		else if (textRGB == 1'b1) bgr_data = {8'h00, 8'hcc, 8'hcc}; // yellow text
 		// default to black
 		else bgr_data <= 24'h0000; 
 		
